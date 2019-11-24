@@ -8,6 +8,7 @@ public class Lexer {
             "char", "for", "break", "continue", "print", "scan"};
     public static int lineNo;
     public static LinkedList<Token> words;
+    public static int startPos;
     public static StringBuilder errorInfoStrb = new StringBuilder();
 
     public static boolean isDigit(char dig) {    //判断是否为数字
@@ -46,6 +47,7 @@ public class Lexer {
         boolean is_neg = false;
         StringBuilder word = new StringBuilder();
         for (int i = 0; i < chars.length; i++) {
+            startPos = i;
             word.delete(0, word.length());
             oneChar = chars[i];
             if (isSpaceOrLine(oneChar)) {
@@ -66,39 +68,51 @@ public class Lexer {
                     switch (word.toString()) {
                         case "int":
                             words.add(new Token(word.toString(), TypeEncoding.INT, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "if":
                             words.add(new Token(word.toString(), TypeEncoding.IF, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "else":
                             words.add(new Token(word.toString(), TypeEncoding.ELSE, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "real":
                             words.add(new Token(word.toString(), TypeEncoding.REAL, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "while":
                             words.add(new Token(word.toString(), TypeEncoding.WHILE, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "NULL":
                             words.add(new Token(word.toString(), TypeEncoding.NULL, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "char":
                             words.add(new Token(word.toString(), TypeEncoding.CHAR, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "for":
                             words.add(new Token(word.toString(), TypeEncoding.FOR, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "break":
                             words.add(new Token(word.toString(), TypeEncoding.BREAK, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "continue":
                             words.add(new Token(word.toString(), TypeEncoding.CONTINUE, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "print":
                             words.add(new Token(word.toString(), TypeEncoding.PRINT, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         case "scan":
                             words.add(new Token(word.toString(), TypeEncoding.SCAN, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         default:
                             break;
@@ -107,8 +121,10 @@ public class Lexer {
                 else {  //是普通标识符
                     if (word.length() <= 64) {
                         words.add(new Token(word.toString(), TypeEncoding.ID, lineNo));// 自定义标识符不能超过64个字符
+                        words.getLast().setStartPos(startPos);
                     } else {
                         words.add(new Token(word.toString(), TypeEncoding.ERROR, lineNo));
+                        words.getLast().setStartPos(startPos);
                         errorInfoStrb.append("ERROR : Line: " + lineNo + " 标识符不得超过64个字符. " + "(" + word.toString() + ")\n");
                     }
                 }
@@ -140,12 +156,15 @@ public class Lexer {
                 is_neg = false;
                 if (is_error) {
                     words.add(new Token(word.toString(), TypeEncoding.ERROR, lineNo));
+                    words.getLast().setStartPos(startPos);
                     errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法数字. " + "(" + word.toString() + ")\n");
                 } else {
                     if (real_flag) {
                         words.add(new Token(word.toString(), TypeEncoding.REALVAL, lineNo));  //实型
+                        words.getLast().setStartPos(startPos);
                     } else {
                         words.add(new Token(word.toString(), TypeEncoding.INTVAL, lineNo));// 整型
+                        words.getLast().setStartPos(startPos);
                     }
                 }
 
@@ -168,16 +187,20 @@ public class Lexer {
                                     is_pos = true;
                                 } else {
                                     words.add(new Token("+", TypeEncoding.PLUS, lineNo));
+                                    words.getLast().setStartPos(startPos);
                                 }
                                 i--;
                             } else {
                                 words.add(new Token("+", TypeEncoding.PLUS, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("+", TypeEncoding.PLUS, lineNo));
+                            words.getLast().setStartPos(startPos);
                         } catch (NoSuchElementException e) {
                             words.add(new Token("+", TypeEncoding.PLUS, lineNo));
+                            words.getLast().setStartPos(startPos);
                             //errorInfoStrb.append("ERROR : Line:" + lineNo + "非法使用'+' " + "(" + word.toString() + ")");
                             i--;
                         }
@@ -199,62 +222,79 @@ public class Lexer {
                                     is_neg = true;
                                 } else {
                                     words.add(new Token("-", TypeEncoding.MINUS, lineNo));
+                                    words.getLast().setStartPos(startPos);
                                 }
                                 i--;
                             } else {
                                 words.add(new Token("-", TypeEncoding.MINUS, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("-", TypeEncoding.MINUS, lineNo));
+                            words.getLast().setStartPos(startPos);
                         } catch (NoSuchElementException e) {
                             words.add(new Token("-", TypeEncoding.MINUS, lineNo));
+                            words.getLast().setStartPos(startPos);
                             //errorInfoStrb.append("ERROR : Line:" + lineNo + "非法使用'-' " + "(" + word.toString() + ")");
                             i--;
                         }
                         break;
                     case '*':
                         words.add(new Token("*", TypeEncoding.MUL, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '(':
                         words.add(new Token("(", TypeEncoding.LEFTP, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case ')':
                         words.add(new Token(")", TypeEncoding.RIGHTP, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '[':
                         words.add(new Token("[", TypeEncoding.LEFTBRK, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case ']':
                         words.add(new Token("]", TypeEncoding.RIGHTBRK, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '{':
                         words.add(new Token("{", TypeEncoding.LEFTBRA, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '!':
                         words.add(new Token("!", TypeEncoding.NOT, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '}':
                         words.add(new Token("}", TypeEncoding.RIGHTBRA, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case ';':
                         words.add(new Token(";", TypeEncoding.END, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case ',':
                         words.add(new Token(",", TypeEncoding.COMMA, lineNo));
+                        words.getLast().setStartPos(startPos);
                         break;
                     case '&':
                         try {
                             oneChar = chars[++i];
                             if (oneChar == '&') {   //检测&&
                                 words.add(new Token("&&", TypeEncoding.AND, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {
                                 words.add(new Token("&", TypeEncoding.ERROR, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'&'. " + "(" + word.toString() + ")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("&", TypeEncoding.ERROR, lineNo));
+                            words.getLast().setStartPos(startPos);
                         }
                         break;
                     case '|':
@@ -262,29 +302,38 @@ public class Lexer {
                             oneChar = chars[++i];
                             if (oneChar == '|') {  //检测||
                                 words.add(new Token("||", TypeEncoding.OR, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {
                                 words.add(new Token("|", TypeEncoding.ERROR, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'|'. " + "(" + word.toString() + ")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("|", TypeEncoding.ERROR, lineNo));
+                            words.getLast().setStartPos(startPos);
                         }
                         break;
                     case '<':
                         try {
                             oneChar = chars[++i];
                             if (oneChar == '>')   //不等于
+                            {
                                 words.add(new Token("<>", TypeEncoding.NEQ, lineNo));
+                                words.getLast().setStartPos(startPos);
+                            }
                             else if (oneChar == '=') { //小于等于
                                 words.add(new Token("<=", TypeEncoding.LESSEQ, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {  //小于
                                 words.add(new Token("<", TypeEncoding.LESS, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                             break;
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("<", TypeEncoding.LESS, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         }
 
@@ -293,13 +342,16 @@ public class Lexer {
                             oneChar = chars[++i];
                             if (oneChar == '=') { //大于等于
                                 words.add(new Token(">=", TypeEncoding.GREATEREQ, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {   //大于
                                 words.add(new Token(">", TypeEncoding.GREATER, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                             break;
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token(">", TypeEncoding.GREATER, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         }
                     case '=':
@@ -307,13 +359,16 @@ public class Lexer {
                             oneChar = chars[++i];
                             if (oneChar == '=') {  //等于
                                 words.add(new Token("==", TypeEncoding.EQ, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {  //赋值
                                 words.add(new Token("=", TypeEncoding.ASSIGN, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                             break;
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("=", TypeEncoding.ASSIGN, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         }
                     case '/':
@@ -345,20 +400,22 @@ public class Lexer {
 
                             } else {  //除法
                                 words.add(new Token("/", TypeEncoding.DIV, lineNo));
+                                words.getLast().setStartPos(startPos);
                                 i--;
                             }
                             break;
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("/", TypeEncoding.DIV, lineNo));
+                            words.getLast().setStartPos(startPos);
                             break;
                         }
                     default:
                         words.add(new Token(word.append(oneChar).toString(), TypeEncoding.ERROR, lineNo));
+                        words.getLast().setStartPos(startPos);
                         errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'" + word.toString() + "'. " + "(" + word.toString() + ")\n");
                         break;
                 }
             }
-
         }
         return words;
     }

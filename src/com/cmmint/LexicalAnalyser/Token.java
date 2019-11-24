@@ -4,6 +4,7 @@ public class Token {
     private String value;
     private int type;
     private int lineNo;
+    private int startPos;
 
     public Token(int type) {
         this.type = type;
@@ -13,6 +14,14 @@ public class Token {
         this.value = value;
         this.type = type;
         this.lineNo = lineNo;
+    }
+
+    public int getStartPos() {
+        return this.startPos;
+    }
+
+    public void setStartPos(int startPos) {
+        this.startPos = startPos;
     }
 
     public int getType() {
@@ -112,6 +121,6 @@ public class Token {
 
     @Override
     public String toString() {
-        return ("<value: '" + this.getValue() + "', " + "type: " + this.typeToString() + " (" + this.getType() + ")" +  ", " + "lineNo: " + this.getLineNo() + ">\n");
+        return ("起始位置：" + this.getStartPos() + "\t<value: '" + this.getValue() + "', " + "type: " + this.typeToString() + " (" + this.getType() + ")" + ", " + "lineNo: " + this.getLineNo() + ">\n");
     }
 }
