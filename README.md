@@ -2,7 +2,7 @@
 JAVA版CMM解释器  
 ##语法分析：
 文法
->program -> stmt-sequence 
+>program -> stmt-sequence  
 >stmt-sequence -> statement ; stmt-sequence | statement | ε 
 >statement -> if-stmt | while-stmt | assign-stmt | read-stmt | write-stmt | declare-stmt 
 >stmt-block -> statement | { stmt-sequence } 
