@@ -61,7 +61,7 @@ public class Gui {
         file_name = getFileName(code_file, file_name);
     }
 
-    private static void createMenu(Shell shell, StyledText code_area, JavaLineStyler lineStyler) {
+    private static void createMenu(Shell shell, StyledText code_area, JavaLineStyler lineStyler, StyledText result_area) {
         final Menu main_menu = new Menu(shell, SWT.BAR);
 
         shell.setMenuBar(main_menu);
@@ -224,7 +224,10 @@ public class Gui {
                 select_all_item.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        code_area.selectAll();
+                        if (code_area.isFocusControl())
+                            code_area.selectAll();
+                        if (result_area.isFocusControl())
+                            result_area.selectAll();
                     }
                 });
                 MenuItem copy_item = new MenuItem(edit_menu, SWT.CASCADE);
@@ -233,7 +236,10 @@ public class Gui {
                 copy_item.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        code_area.copy();
+                        if (code_area.isFocusControl())
+                            code_area.copy();
+                        if (result_area.isFocusControl())
+                            result_area.copy();
                     }
                 });
                 MenuItem cut_item = new MenuItem(edit_menu, SWT.CASCADE);
@@ -486,7 +492,7 @@ public class Gui {
         shell.setBackground(color);
         StyledText code_area = createCodeArea(shell, lineStyler);
         StyledText result_area = createResultArea(shell, code_area);
-        createMenu(shell, code_area, lineStyler);
+        createMenu(shell, code_area, lineStyler, result_area);
         createButtons(shell, code_area, flag, display, result_area);
 
         shell.setBounds(600, 100, 600, 900);

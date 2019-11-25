@@ -16,11 +16,11 @@
 > + more-value -> , exp more-value|ε 
 > + variable -> identifier [ [ exp ] ]  
 > + exp-> cond  
-> + cond -> exp more-exp | logical-op cond  
+> + cond -> gen-exp more-exp | logical-op cond  
 > + more-exp -> logical-op exp more-exp |ε  
-> + gen-exp -> addtive-exp more-addt-exp  
-> + more-add-exp -> compare-op addtive-exp more-addt-exp |ε  
-> + addtive-exp -> term more-term  
+> + gen-exp -> additive-exp more-additive-exp  
+> + more-add-exp -> compare-op additive-exp more-additive-exp |ε  
+> + additive-exp -> term more-term  
 > + more-term -> add-op additive-exp more-term|ε  
 > + term -> factor more-factor  
 > + more-factor -> mul-op term|ε  

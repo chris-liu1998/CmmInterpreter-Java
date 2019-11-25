@@ -97,8 +97,8 @@ public class Parser {
         consumeNextToken(TypeEncoding.WHILE);
         consumeNextToken(TypeEncoding.LEFTP);
         try {
-            TreeNode leftnode = pCondExp();
-            node.setLeftN(leftnode);
+            TreeNode left_node = pCondExp();
+            node.setLeftN(left_node);
             consumeNextToken(TypeEncoding.RIGHTP);
         } catch (ParserException e) {
             throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " WHILE括号内应为逻辑表达式或数值类型 或 缺少')'.");
@@ -167,8 +167,8 @@ public class Parser {
                 if (!checkNextTokenType(TypeEncoding.RIGHTBRA))
                     node.setMiddleN(pValueList());
                 else {
-                    TreeNode valnode = new TreeNode(StatementType.VALUE_LIST);
-                    node.setMiddleN(valnode);
+                    TreeNode val_node = new TreeNode(StatementType.VALUE_LIST);
+                    node.setMiddleN(val_node);
                 }
                 consumeNextToken(TypeEncoding.RIGHTBRA);
             }
@@ -230,8 +230,8 @@ public class Parser {
         consumeNextToken(TypeEncoding.IF);
         consumeNextToken(TypeEncoding.LEFTP);
         try {
-            TreeNode leftnode = pCondExp();
-            node.setLeftN(leftnode);
+            TreeNode left_node = pCondExp();
+            node.setLeftN(left_node);
             consumeNextToken(TypeEncoding.RIGHTP);
         } catch (ParserException e) {
             throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " IF括号内应为逻辑表达式或者数值类型 或 缺少')'.");
@@ -246,18 +246,18 @@ public class Parser {
         } else if (checkNextTokenType(TypeEncoding.ELSE)) {
             node.setMiddleN(new TreeNode(StatementType.NONE));
             consumeNextToken(TypeEncoding.ELSE);
-            TreeNode elsenode = new TreeNode(StatementType.ELSE_ST);
-            node.setRightN(elsenode);
+            TreeNode else_node = new TreeNode(StatementType.ELSE_ST);
+            node.setRightN(else_node);
             if (checkNextTokenType(TypeEncoding.END)) {
                 consumeNextToken(TypeEncoding.END);
                 return node;
             } else if (checkNextTokenType(TypeEncoding.LEFTBRA)) {
                 allowNull = true;
-                elsenode.setLeftN(pStatement());
+                else_node.setLeftN(pStatement());
                 allowNull = false;
             } else {
                 allowNull = false;
-                elsenode.setLeftN(pStatement());
+                else_node.setLeftN(pStatement());
             }
             return node;
         } else {
@@ -267,22 +267,22 @@ public class Parser {
 
         if (getNextTokenType() == TypeEncoding.ELSE) { //如果后面有else
             consumeNextToken(TypeEncoding.ELSE);
-            TreeNode elsenode = new TreeNode(StatementType.ELSE_ST);
-            node.setRightN(elsenode);
+            TreeNode else_node = new TreeNode(StatementType.ELSE_ST);
+            node.setRightN(else_node);
 //            allowNull = true;
-//            elsenode.setLeftN(pStatement());
+//            else_node.setLeftN(pStatement());
 //            allowNull = false;
             if (checkNextTokenType(TypeEncoding.END)) {
-                elsenode.setLeftN(new TreeNode(StatementType.NONE));
+                else_node.setLeftN(new TreeNode(StatementType.NONE));
                 consumeNextToken(TypeEncoding.END);
                 return node;
             } else if (checkNextTokenType(TypeEncoding.LEFTBRA)) {
                 allowNull = true;
-                elsenode.setLeftN(pStatement());
+                else_node.setLeftN(pStatement());
                 allowNull = false;
             } else {
                 allowNull = false;
-                elsenode.setLeftN(pStatement());
+                else_node.setLeftN(pStatement());
             }
         }
         return node;
