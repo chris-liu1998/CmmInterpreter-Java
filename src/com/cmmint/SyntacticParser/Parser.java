@@ -4,7 +4,6 @@ import com.Exception.ParserException;
 import com.cmmint.LexicalAnalyser.Token;
 import com.cmmint.LexicalAnalyser.TypeEncoding;
 
-import java.lang.annotation.ElementType;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -13,22 +12,23 @@ public class Parser {
     private static ListIterator<Token> iterator = null;
     private static LinkedList<Token> tokensList = null;
     private static boolean allowNull = false;  //允许空语句
+    public static int dims;
 
     public static Token getCurrentToken() {
         return currentToken;
     }
 
-    public static LinkedList<TreeNode> syntaxAnalyse(LinkedList<Token> tokens) throws ParserException {
+    public static LinkedList<TreeNode> syntaxAnalyse(LinkedList<Token> tokens) throws ParserException {  //语法分析主程序
         LinkedList<TreeNode> syntaxTree = new LinkedList<>();
         tokensList = tokens;
         iterator = tokensList.listIterator();
         while (iterator.hasNext()) {
             syntaxTree.add(pStatement());
         }
-        return syntaxTree;
+        return syntaxTree;  //返回语法树
     }
 
-    public static String printTree(LinkedList<TreeNode> tree) {
+    public static String printTree(LinkedList<TreeNode> tree) {  //打印语法树
         StringBuilder strb = new StringBuilder();
         for (TreeNode node : tree) {
             strb.append(node.toString());
@@ -36,34 +36,34 @@ public class Parser {
         return strb.toString();
     }
 
-    private static TreeNode pExpression() throws ParserException {
+    private static TreeNode pExpression() throws ParserException {  //处理表达式
         TreeNode node = new TreeNode(StatementType.EXP);
         node.setLeftN(pCondExp());
         return node;
     }
 
-    private static TreeNode pStatement() throws ParserException {
+    private static TreeNode pStatement() throws ParserException { //处理语句或语句块
         switch (getNextTokenType()) {
             case TypeEncoding.IF:
-                return pIfStatement();
+                return pIfStatement();  //转向处理if语句
             case TypeEncoding.WHILE:
-                return pWhileStatement();
+                return pWhileStatement();  //转向处理while语句
             case TypeEncoding.ID:
-                return pAssignStatement();
+                return pAssignStatement();  //转向处理赋值语句
             case TypeEncoding.INT:
             case TypeEncoding.REAL:
-                return pDeclareStatement();
+                return pDeclareStatement();  //转向处理声明语句
             case TypeEncoding.PRINT:
-                return pPrintStatement();
+                return pPrintStatement();  //转向处理打印语句
             case TypeEncoding.SCAN:
-                return pScanStatement();
+                return pScanStatement();   //转向处理扫描语句
             case TypeEncoding.LEFTBRA:
-                return pStBlockStatement();
+                return pStBlockStatement();  //转向处理语句块
             case TypeEncoding.BREAK:
             case TypeEncoding.CONTINUE:
-                return pJumpStatement();
+                return pJumpStatement();  //转向处理跳转语句
             default:
-                if (allowNull)
+                if (allowNull)    //判断当前位置是否允许为空语句
                     consumeNextToken(StatementType.NONE);
                 else if (currentToken != null)
                     throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " 此处需要有单个语句或者语句块或';'.");
@@ -78,7 +78,7 @@ public class Parser {
         return node;
     }
 
-    private static TreeNode pJumpStatement() throws ParserException {
+    private static TreeNode pJumpStatement() throws ParserException {   //处理跳转语句
         if (checkNextTokenType(TypeEncoding.BREAK, TypeEncoding.CONTINUE)) {
             currentToken = iterator.next();
             TreeNode node = new TreeNode(StatementType.JUMP_ST);
@@ -92,7 +92,7 @@ public class Parser {
     }
 
 
-    private static TreeNode pWhileStatement() throws ParserException {
+    private static TreeNode pWhileStatement() throws ParserException {    //处理while语句
         TreeNode node = new TreeNode(StatementType.WHILE_ST);
         consumeNextToken(TypeEncoding.WHILE);
         consumeNextToken(TypeEncoding.LEFTP);
@@ -119,7 +119,7 @@ public class Parser {
 
     private static TreeNode pStBlockStatement() throws ParserException {  //处理语句块
         TreeNode node = new TreeNode(StatementType.STBLOCK);
-        TreeNode headnode = node;
+        TreeNode head_node = node;
         consumeNextToken(TypeEncoding.LEFTBRA);
 
         while (!checkNextTokenType(TypeEncoding.RIGHTBRA) && iterator.hasNext()) {
@@ -129,36 +129,36 @@ public class Parser {
             node = temp;
         }
         consumeNextToken(TypeEncoding.RIGHTBRA);
-        return headnode;
+        return head_node;
     }
 
     private static TreeNode pDeclareStatement() throws ParserException {  //处理声明语句
         TreeNode node = new TreeNode(StatementType.DEC_ST);
-        TreeNode varnode = new TreeNode(StatementType.VAR);
-        if (checkNextTokenType(TypeEncoding.INT, TypeEncoding.REAL)) {
+        TreeNode var_node = new TreeNode(StatementType.VAR);
+        if (checkNextTokenType(TypeEncoding.INT, TypeEncoding.REAL)) {   //检查下一个token是否是int或者real
             currentToken = iterator.next();
             int type = currentToken.getType();
             if (type == TypeEncoding.INT) {
-                varnode.setdType(TypeEncoding.INT);
+                var_node.setdType(TypeEncoding.INT);
             } else {
-                varnode.setdType(TypeEncoding.REAL);
+                var_node.setdType(TypeEncoding.REAL);
             }
         } else {
             throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " 此处缺少INT或REAL类型.");
         }
         if (checkNextTokenType(TypeEncoding.ID)) {
             currentToken = iterator.next();
-            varnode.setValue(currentToken.getValue());
+            var_node.setValue(currentToken.getValue());
         } else {
             throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " 此处缺少标识符.");
         }
-        if (checkNextTokenType(TypeEncoding.ASSIGN)) {
+        if (checkNextTokenType(TypeEncoding.ASSIGN)) {    //是否变为初始化语句
             node.setType(StatementType.INIT_ST);
             consumeNextToken(TypeEncoding.ASSIGN);
             node.setMiddleN(pExpression());
         } else if (checkNextTokenType(TypeEncoding.LEFTBRK)) {
             consumeNextToken(TypeEncoding.LEFTBRK);
-            varnode.setLeftN(pExpression());
+            var_node.setLeftN(pExpression());
             consumeNextToken(TypeEncoding.RIGHTBRK);
             if (checkNextTokenType(TypeEncoding.ASSIGN)) {
                 node.setType(StatementType.INIT_ST);
@@ -174,7 +174,7 @@ public class Parser {
             }
         }
         consumeNextToken(TypeEncoding.END);
-        node.setLeftN(varnode);
+        node.setLeftN(var_node);
         return node;
     }
 
@@ -288,7 +288,7 @@ public class Parser {
         return node;
     }
 
-    private static TreeNode pCondExp() throws ParserException {
+    private static TreeNode pCondExp() throws ParserException {  //处理条件表达式
         TreeNode node = new TreeNode(StatementType.EXP);
         if (checkNextTokenType(TypeEncoding.NOT)) {
             node.setLeftN(pLogicalOP());
@@ -453,7 +453,7 @@ public class Parser {
         throw new ParserException("ERROR : " + "line: " + currentToken.getLineNo() + " 此处缺少因子.");
     }
 
-    private static TreeNode getVariable() throws ParserException {
+    private static TreeNode getVariable() throws ParserException {  //获取变量名，可能为数组的形式
         TreeNode node = new TreeNode(StatementType.VAR);
         if (checkNextTokenType(TypeEncoding.ID)) {
             currentToken = iterator.next();
@@ -469,7 +469,7 @@ public class Parser {
         return node;
     }
 
-    private static TreeNode getNumValue() throws ParserException {
+    private static TreeNode getNumValue() throws ParserException {    //获取具体的值
         if (iterator.hasNext()) {
             currentToken = iterator.next();
             int type = currentToken.getType();
@@ -495,7 +495,7 @@ public class Parser {
         return false;
     }
 
-    private static int getNextTokenType() {
+    private static int getNextTokenType() {    //获取下一个token类型
         if (iterator.hasNext()) {
             int type = iterator.next().getType();
             iterator.previous();
@@ -504,7 +504,7 @@ public class Parser {
         return TypeEncoding.NULL;
     }
 
-    private static void consumeNextToken(int type) throws ParserException {
+    private static void consumeNextToken(int type) throws ParserException {   //消耗掉无用的token
         if (iterator.hasNext()) {
             currentToken = iterator.next();
             if (currentToken.getType() == type) return;

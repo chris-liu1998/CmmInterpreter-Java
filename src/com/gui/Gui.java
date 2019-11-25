@@ -17,16 +17,15 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Set;
+
 
 public class Gui {
     private static boolean isSaved = false;
     private static String code_file = null;
     private static String file_name = null;
     private static int flag = 0;
-    private static boolean isParseError = false;
+    //private static boolean isParseError = false;
     private static Token currentToken = null;
     private static String[] exfilter = {"*.cmm", "*.txt", "*.*"};
 
@@ -338,7 +337,7 @@ public class Gui {
         code_text.addModifyListener((e) -> { //更新行号
             // For line number redrawing.
             lineStyler.parseBlockComments(code_text.getText());
-            isParseError = false;
+            //isParseError = false;
             currentToken = null;
             code_text.redraw();
             isSaved = false;
@@ -418,7 +417,7 @@ public class Gui {
                         String result = Parser.printTree(Parser.syntaxAnalyse(tokens));
                         result_area.setText(result + "\n" + Lexer.errorInfoStrb.toString());
                     } catch (ParserException e1) {  //打印错误
-                        isParseError = true;
+                        //isParseError = true;
                         currentToken = Parser.getCurrentToken();
                         int start = currentToken.getStartPos();
                         int length = currentToken.getValue().length();
