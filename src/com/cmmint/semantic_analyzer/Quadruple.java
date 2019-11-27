@@ -1,4 +1,4 @@
-package com.cmmint.SemanticAnalyzer;
+package com.cmmint.semantic_analyzer;
 
 public class Quadruple {
     private String first;

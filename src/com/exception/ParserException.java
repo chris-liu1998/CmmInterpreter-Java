@@ -1,4 +1,4 @@
-package com.Exception;
+package com.exception;
 
 public class ParserException extends Exception{
     public ParserException() {

@@ -1,26 +1,30 @@
-package com.cmmint.SyntacticParser;
+package com.cmmint.syntactic_analyzer;
 
-import com.cmmint.LexicalAnalyser.Token;
+import com.cmmint.lexical_analyser.Token;
+
+import java.util.ArrayList;
 
 public class TreeNode {
     private int type;
-    private int dType = 100;
+    private int dataType = 100;
     private String value;
     private TreeNode leftN;
     private TreeNode rightN;
     private TreeNode middleN;
     private TreeNode nextStmtN;
+    public ArrayList<TreeNode> children = new ArrayList<>(0);
+
 
     public TreeNode(int type) {
         this.type = type;
     }
 
-    public int getdType() {
-        return this.dType;
+    public int getDataType() {
+        return this.dataType;
     }
 
-    public void setdType(int dType) {
-        this.dType = dType;
+    public void setDataType(int dataType) {
+        this.dataType = dataType;
     }
 
     public int getType() {
@@ -83,7 +87,7 @@ public class TreeNode {
                 return "PRINT_STATEMENT";
             case StatementType.SCAN_ST:
                 return "SCAN_STATEMENT";
-            case StatementType.INIT_ST:
+            case StatementType.INIT:
                 return "INITIAL_STATEMENT";
             case StatementType.DEC_ST:
                 return "DEC_STATEMENT";
@@ -95,6 +99,10 @@ public class TreeNode {
                 return "JUMP_STATEMENT";
             case StatementType.VALUE_LIST:
                 return "VALUE_LIST";
+            case StatementType.VAR_LIST:
+                return "VARIABLE_LIST";
+            case StatementType.ID:
+                return "IDENTIFIER";
             case StatementType.MORE_VALUE:
                 return "MORE_VALUE";
             case StatementType.EXP:
@@ -115,12 +123,16 @@ public class TreeNode {
                 return "MORE_TERM";
             case StatementType.TERM:
                 return "TERM";
-            case StatementType.MORE_ADDEXP:
+            case StatementType.MORE_ADD_EXP:
                 return "MORE_ADDITIVE_EXP";
-            case StatementType.MORE_EXP:
+            case StatementType.MORE_LOGIC_EXP:
                 return "MORE_EXP";
             case StatementType.VALUE:
                 return "VALUE";
+            case StatementType.PROGRAM:
+                return "PROGRAM";
+            case StatementType.STMT_SEQ:
+                return "STATEMENT_SEQ";
             case StatementType.NONE:
                 return "NONE";
             case StatementType.NULL:
@@ -130,12 +142,12 @@ public class TreeNode {
         }
     }
 
-    public String printNode(TreeNode node, String space) {
+    private String printNode(TreeNode node, String space) {
         boolean hasVal = false;
         StringBuilder strb = new StringBuilder();
-        strb.append(space + "<" + node.typeToString() + " : " + new Token(node.getdType()).typeToString() + ">\n");
+        strb.append(space).append("<").append(node.typeToString()).append(" : ").append(new Token(node.getDataType()).typeToString()).append(">\n");
         if (node.getValue() != null) {
-            strb.append("\t\t" + space + node.getValue() + "\n");
+            strb.append("\t\t").append(space).append(node.getValue()).append("\n");
         }
         if (node.getLeftN() != null)
             strb.append(printNode(node.getLeftN(), "\t" + space));
@@ -153,4 +165,5 @@ public class TreeNode {
     public String toString() {
         return printNode(this, "");
     }
+
 }

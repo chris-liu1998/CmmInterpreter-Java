@@ -1,9 +1,9 @@
 package com.gui;
 
-import com.Exception.ParserException;
-import com.cmmint.LexicalAnalyser.Lexer;
-import com.cmmint.SyntacticParser.Parser;
-import com.cmmint.LexicalAnalyser.Token;
+import com.exception.ParserException;
+import com.cmmint.lexical_analyser.Lexer;
+import com.cmmint.syntactic_analyzer.Parser;
+import com.cmmint.lexical_analyser.Token;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -17,6 +17,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 
@@ -24,10 +25,8 @@ public class Gui {
     private static boolean isSaved = false;
     private static String code_file = null;
     private static String file_name = null;
-    private static int flag = 0;
-    //private static boolean isParseError = false;
     private static Token currentToken = null;
-    private static String[] exfilter = {"*.cmm", "*.txt", "*.*"};
+    private static String[] ex_filter = {"*.cmm", "*.txt", "*.*"};
 
     private static String getFileName(String code_file, String file_name) {
         if (code_file == null)
@@ -35,11 +34,11 @@ public class Gui {
         return file_name;
     }
 
-    private static void saveFile(String[] exfilter, Shell shell, StyledText code_area) {
+    private static void saveFile(String[] ex_filter, Shell shell, StyledText code_area) {
         if (code_file == null) { //当要保存未保存过的代码
             FileDialog fd = new FileDialog(shell, SWT.SAVE);
             fd.setText("保存");
-            fd.setFilterExtensions(exfilter);
+            fd.setFilterExtensions(ex_filter);
             fd.setOverwrite(true);
             code_file = fd.open();
             file_name = fd.getFileName();
@@ -50,7 +49,7 @@ public class Gui {
                 if (!file.exists()) {   //防止意外删除
                     file.createNewFile();
                 }
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false), "UTF-8"));
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false), StandardCharsets.UTF_8));
                 bw.write(code_area.getText());
                 bw.close();
                 isSaved = true;
@@ -91,7 +90,7 @@ public class Gui {
                                 box.setMessage("当前文件未保存，是否保存？");
                                 int choice = box.open();
                                 if (choice == SWT.YES) {
-                                    saveFile(exfilter, shell, code_area);
+                                    saveFile(ex_filter, shell, code_area);
                                     code_area.setText("");
                                 } else if (choice == SWT.NO)
                                     code_area.setText("");
@@ -113,13 +112,13 @@ public class Gui {
                     public void widgetSelected(SelectionEvent e) {
                         FileDialog open_file = new FileDialog(shell, SWT.OPEN);
                         open_file.setText("打开");
-                        open_file.setFilterExtensions(exfilter);
+                        open_file.setFilterExtensions(ex_filter);
                         String last_file_name = file_name;
                         code_file = open_file.open();
                         file_name = open_file.getFileName();
                         if (code_file != null) {
                             try {
-                                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(code_file), "UTF-8"));
+                                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(code_file), StandardCharsets.UTF_8));
                                 StringBuilder strb = new StringBuilder();
                                 String content;
                                 while ((content = br.readLine()) != null) {
@@ -134,10 +133,8 @@ public class Gui {
                                         }
                                 );
                                 lineStyler.parseBlockComments(strb.toString());
-                            } catch (FileNotFoundException e1) {
+                            } catch (IOException e1) {
                                 e1.printStackTrace();
-                            } catch (IOException e2) {
-                                e2.printStackTrace();
                             }
 
                         }
@@ -158,7 +155,7 @@ public class Gui {
                 save_file_item.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        saveFile(exfilter, shell, code_area);
+                        saveFile(ex_filter, shell, code_area);
                         shell.setText("CMM解释器—" + file_name);
                     }
                 });
@@ -172,7 +169,7 @@ public class Gui {
                         FileDialog fd = new FileDialog(shell, SWT.SAVE);
                         fd.setText("另存为");
                         fd.setOverwrite(true);
-                        fd.setFilterExtensions(exfilter);
+                        fd.setFilterExtensions(ex_filter);
                         String filename = fd.open();
                         if (filename != null) {
                             File file = new File(filename);
@@ -211,7 +208,6 @@ public class Gui {
                         }
                     }
                 });
-
             }
             MenuItem edit_item = new MenuItem(main_menu, SWT.CASCADE);
             edit_item.setText("编辑&(E)");
@@ -375,7 +371,7 @@ public class Gui {
         return result_text;
     }
 
-    private static void createButtons(Shell shell, StyledText code_area, int flag, Display display, StyledText
+    private static void createButtons(Shell shell, StyledText code_area, Display display, StyledText
             result_area) {
 
         final ToolBar toolBar = new ToolBar(shell, SWT.HORIZONTAL);
@@ -417,10 +413,10 @@ public class Gui {
                     Lexer.lexAnalyze(code_area.getText().toCharArray());
                     result_area.setText(Lexer.printTokens() + "\n" + Lexer.errorInfoStrb.toString());
                 } else if (combo.getSelectionIndex() == 1) {  //运行语法分析器
-                    StringBuilder error = new StringBuilder();
+                    String error;
                     try {
                         LinkedList<Token> tokens = Lexer.lexAnalyze(code_area.getText().toCharArray());
-                        String result = Parser.printTree(Parser.syntaxAnalyse(tokens));
+                        String result = Parser.syntaxAnalyse(tokens).toString();
                         result_area.setText(result + "\n" + Lexer.errorInfoStrb.toString());
                     } catch (ParserException e1) {  //打印错误
                         //isParseError = true;
@@ -438,8 +434,8 @@ public class Gui {
 //                        );
 
                         // code_area.setStyleRange(styleRange);
-                        error.append(e1.getMessage() + "\n");
-                        result_area.setText(error.toString() + " (" + currentToken.getValue() + ")");
+                        error = e1.getMessage();
+                        result_area.setText(error);
                     }
                 } else {
 
@@ -453,7 +449,7 @@ public class Gui {
                                                     @Override
                                                     public void widgetSelected(SelectionEvent e) {
                                                         shell.setFocus();
-                                                        saveFile(exfilter, shell, code_area);
+                                                        saveFile(ex_filter, shell, code_area);
                                                         shell.setText("CMM解释器—" + file_name);
                                                     }
                                                 });
@@ -493,7 +489,7 @@ public class Gui {
         StyledText code_area = createCodeArea(shell, lineStyler);
         StyledText result_area = createResultArea(shell, code_area);
         createMenu(shell, code_area, lineStyler, result_area);
-        createButtons(shell, code_area, flag, display, result_area);
+        createButtons(shell, code_area, display, result_area);
 
         shell.setBounds(600, 100, 600, 900);
         shell.open();

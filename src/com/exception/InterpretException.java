@@ -1,4 +1,4 @@
-package com.Exception;
+package com.exception;
 
 public class InterpretException extends Exception {
     public InterpretException() {

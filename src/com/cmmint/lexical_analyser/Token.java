@@ -1,4 +1,4 @@
-package com.cmmint.LexicalAnalyser;
+package com.cmmint.lexical_analyser;
 
 public class Token {
     private String value;
@@ -10,7 +10,7 @@ public class Token {
         this.type = type;
     }
 
-    public Token(String value, int type, int lineNo) {
+    Token(String value, int type, int lineNo) {
         this.value = value;
         this.type = type;
         this.lineNo = lineNo;
@@ -20,7 +20,7 @@ public class Token {
         return this.startPos;
     }
 
-    public void setStartPos(int startPos) {
+    void setStartPos(int startPos) {
         this.startPos = startPos;
     }
 
@@ -52,29 +52,29 @@ public class Token {
         switch (this.getType()) {
             case TypeEncoding.INT:
                 return "INT";
-            case TypeEncoding.INTVAL:
+            case TypeEncoding.INT_VAL:
                 return "INT_VALUE";
             case TypeEncoding.REAL:
                 return "REAL";
-            case TypeEncoding.REALVAL:
+            case TypeEncoding.REAL_VAL:
                 return "REAL_VALUE";
             case TypeEncoding.ID:
-                return "标识符";
+                return "Identifier";
             case TypeEncoding.END:
                 return ";";
             case TypeEncoding.ASSIGN:
                 return "=";
-            case TypeEncoding.LEFTP:
+            case TypeEncoding.LEFT_P:
                 return "(";
-            case TypeEncoding.RIGHTP:
+            case TypeEncoding.RIGHT_P:
                 return ")";
-            case TypeEncoding.RIGHTBRA:
+            case TypeEncoding.RIGHT_BRA:
                 return "}";
-            case TypeEncoding.LEFTBRA:
+            case TypeEncoding.LEFT_BRA:
                 return "{";
-            case TypeEncoding.LEFTBRK:
+            case TypeEncoding.LEFT_BRK:
                 return "[";
-            case TypeEncoding.RIGHTBRK:
+            case TypeEncoding.RIGHT_BRK:
                 return "]";
             case TypeEncoding.WHILE:
                 return "WHILE";
@@ -86,9 +86,21 @@ public class Token {
                 return "NOT_EQ";
             case TypeEncoding.EQ:
                 return "EQ";
-            case TypeEncoding.GREATEREQ:
+            case TypeEncoding.MOD:
+                return "MOD";
+            case TypeEncoding.MOD_ASSIGN:
+                return "MOD_ASSIGN";
+            case TypeEncoding.MUL_ASSIGN:
+                return "MUL_ASSIGN";
+            case TypeEncoding.DIV_ASSIGN:
+                return "DIV_ASSIGN";
+            case TypeEncoding.PLUS_ASSIGN:
+                return "PLUS_ASSIGN";
+            case TypeEncoding.MINUS_ASSIGN:
+                return "MINUS_ASSIGN";
+            case TypeEncoding.GREATER_EQ:
                 return "GREATER_EQ";
-            case TypeEncoding.LESSEQ:
+            case TypeEncoding.LESS_EQ:
                 return "LESS_EQ";
             case TypeEncoding.LESS:
                 return "LESS";
@@ -112,8 +124,14 @@ public class Token {
                 return "OR";
             case TypeEncoding.NOT:
                 return "NOT";
+            case TypeEncoding.PLUS_PLUS:
+                return "SELF_INC";
+            case TypeEncoding.MINUS_MINUS:
+                return "SELF_DEC";
             case TypeEncoding.NULL:
                 return "NULL";
+            case TypeEncoding.ERROR:
+                return "ERROR";
             default:
                 return "NONE";
         }

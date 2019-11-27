@@ -1,4 +1,4 @@
-package com.cmmint.SemanticAnalyzer;
+package com.cmmint.semantic_analyzer;
 
 public class InstructionSymbol {
     public static final String JUMP = "jump";

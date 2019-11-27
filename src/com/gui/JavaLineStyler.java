@@ -18,21 +18,21 @@ class JavaLineStyler implements LineStyleListener {
     private Color[] colors;
     private Vector<int[]> blockComments = new Vector<>();
     private StringBuilder strb;
-    public static final int EOF = -1;
-    public static final int EOL = 10;
+    private static final int EOF = -1;
+    private static final int EOL = 10;
 
-    public static final int WORD = 0;
-    public static final int WHITE = 1;
-    public static final int KEY = 2;
-    public static final int COMMENT = 3;
-    public static final int STRING = 5;
-    public static final int OTHER = 6;
-    public static final int NUMBER = 7;
-    public static final int ERROR = 8;
+    private static final int WORD = 0;
+    private static final int WHITE = 1;
+    private static final int KEY = 2;
+    private static final int COMMENT = 3;
+    private static final int STRING = 5;
+    private static final int OTHER = 6;
+    private static final int NUMBER = 7;
+    private static final int ERROR = 8;
 
-    public static final int MAXIMUM_TOKEN = 9;
+    private static final int MAXIMUM_TOKEN = 9;
 
-    public JavaLineStyler() {
+    JavaLineStyler() {
         initializeColors();
         scanner = new JavaScanner();
     }
@@ -41,14 +41,14 @@ class JavaLineStyler implements LineStyleListener {
 //        this.currentToken = token;
 //    }
 
-    Color getColor(int type) {
+    private Color getColor(int type) {
         if (type < 0 || type >= tokenColors.length) {
             return null;
         }
         return colors[tokenColors[type]];
     }
 
-    boolean inBlockComment(int start, int end) {
+    private boolean inBlockComment(int start, int end) {
         for (int i = 0; i < blockComments.size(); i++) {
             int[] offsets = blockComments.elementAt(i);
             // start of comment in the line
@@ -60,7 +60,7 @@ class JavaLineStyler implements LineStyleListener {
         return false;
     }
 
-    void initializeColors() {
+    private void initializeColors() {
         Display display = Display.getDefault();
         colors = new Color[]{
                 new Color(display, new RGB(0, 0, 0)),        // black
@@ -83,8 +83,8 @@ class JavaLineStyler implements LineStyleListener {
     }
 
     void disposeColors() {
-        for (int i = 0; i < colors.length; i++) {
-            colors[i].dispose();
+        for (Color color : colors) {
+            color.dispose();
         }
     }
 
@@ -116,7 +116,7 @@ class JavaLineStyler implements LineStyleListener {
                 // Only create a style if the token color is different than the
                 // widget's default foreground color and the token's style is not
                 // bold.  Keywords are bolded.
-                if ((!color.equals(defaultFgColor)) || (token == KEY)) {
+                if (color != null && ((!color.equals(defaultFgColor)) || (token == KEY))) {
                     StyleRange style = new StyleRange(scanner.getStartOffset() + event.lineOffset, scanner.getLength(), color, null);
                     if (token == KEY) {
                         style.fontStyle = SWT.BOLD;
@@ -133,7 +133,7 @@ class JavaLineStyler implements LineStyleListener {
                         }
                     }
                 }
-            } else if ((!styles.isEmpty()) && ((lastStyle = styles.lastElement()).fontStyle == SWT.BOLD)) {
+            } else if ((!styles.isEmpty()) && (styles.lastElement().fontStyle == SWT.BOLD)) {
                 int start = scanner.getStartOffset() + event.lineOffset;
                 lastStyle = styles.lastElement();
                 // A font style of SWT.BOLD implies that the last style
@@ -151,8 +151,8 @@ class JavaLineStyler implements LineStyleListener {
         styles.copyInto(event.styles);
     }
 
-    public void parseBlockComments(String text) {
-        blockComments = new Vector<int[]>();
+    void parseBlockComments(String text) {
+        blockComments = new Vector<>();
         StringReader buffer = new StringReader(text);
         int ch;
         boolean blkComment = false;
@@ -213,13 +213,12 @@ class JavaLineStyler implements LineStyleListener {
      */
     public class JavaScanner {
 
-        protected Hashtable<String, Integer> fgKeys = null;
-        protected StringBuffer fBuffer = new StringBuffer();
-        protected String fDoc;
-        protected int fPos;
-        protected int fEnd;
-        protected int fStartToken;
-        protected boolean fEofSeen = false;
+        Hashtable<String, Integer> fgKeys = null;
+        StringBuffer fBuffer = new StringBuffer();
+        String fDoc;
+        int fPos;
+        int fEnd;
+        int fStartToken;
 
         private String[] fgKeywords = {
                 "abstract",
@@ -240,14 +239,14 @@ class JavaLineStyler implements LineStyleListener {
                 "write", "read", "real"
         };
 
-        public JavaScanner() {
+        JavaScanner() {
             initialize();
         }
 
         /**
          * Returns the ending location of the current token in the document.
          */
-        public final int getLength() {
+        final int getLength() {
             return fPos - fStartToken;
         }
 
@@ -256,7 +255,7 @@ class JavaLineStyler implements LineStyleListener {
          */
         void initialize() {
             fgKeys = new Hashtable<>();
-            Integer k = new Integer(KEY);
+            Integer k = KEY;
             for (String word : fgKeywords)
                 fgKeys.put(word, k);
         }
@@ -264,14 +263,14 @@ class JavaLineStyler implements LineStyleListener {
         /**
          * Returns the starting location of the current token in the document.
          */
-        public final int getStartOffset() {
+        final int getStartOffset() {
             return fStartToken;
         }
 
         /**
          * Returns the next lexical token in the document.
          */
-        public int nextToken() {
+        int nextToken() {
             int c;
             boolean isError = false;
             boolean isReal = false;
@@ -402,7 +401,7 @@ class JavaLineStyler implements LineStyleListener {
                             unread(c);
                             Integer i = fgKeys.get(fBuffer.toString());
                             if (i != null)
-                                return i.intValue();
+                                return i;
                             if (isError)
                                 return ERROR;
                             return WORD;
@@ -417,7 +416,7 @@ class JavaLineStyler implements LineStyleListener {
         /**
          * Returns next character.
          */
-        protected int read() {
+        int read() {
             if (fPos <= fEnd) {
                 char ch = fDoc.charAt(fPos++);
                 strb.append(ch);
@@ -428,13 +427,13 @@ class JavaLineStyler implements LineStyleListener {
             return EOF;
         }
 
-        public void setRange(String text) {
+        void setRange(String text) {
             fDoc = text;
             fPos = 0;
             fEnd = fDoc.length() - 1;
         }
 
-        protected void unread(int c) {
+        void unread(int c) {
             if (c != EOF) {
                 fPos--;
                 strb.deleteCharAt(strb.length() - 1);

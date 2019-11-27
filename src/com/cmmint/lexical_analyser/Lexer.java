@@ -1,29 +1,26 @@
-package com.cmmint.LexicalAnalyser;
+package com.cmmint.lexical_analyser;
 
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 
 public class Lexer {
     private static String[] keyWords = {"if", "else", "while", "int", "real", "NULL",
             "char", "for", "break", "continue", "print", "scan"};
-    public static int lineNo;
-    public static LinkedList<Token> words;
-    public static int startPos;
+    private static LinkedList<Token> words;
     public static StringBuilder errorInfoStrb = new StringBuilder();
 
-    public static boolean isDigit(char dig) {    //判断是否为数字
+    private static boolean isDigit(char dig) {    //判断是否为数字
         return (dig >= '0' && dig <= '9');
     }
 
-    public static boolean isSpaceOrLine(char sp) {  //判断是否为空格、回车、换行等
+    private static boolean isSpaceOrLine(char sp) {  //判断是否为空格、回车、换行等
         return (sp == ' ' || sp == '\t' || sp == '\n' || sp == '\r');
     }
 
-    public static boolean isLetter(char let) {   //判断是否为字母
+    private static boolean isLetter(char let) {   //判断是否为字母
         return ((let >= 'a' && let <= 'z') || (let >= 'A' && let <= 'Z'));
     }
 
-    public static boolean isKey(String str) {   //判断单词是否为关键字
+    private static boolean isKey(String str) {   //判断单词是否为关键字
         for (String key : keyWords) {
             if (key.equals(str))
                 return true;
@@ -42,12 +39,12 @@ public class Lexer {
     public static LinkedList<Token> lexAnalyze(char[] chars) {
         words = new LinkedList<>();  //用来存储分析出来的token
         char oneChar;
-        lineNo = 1;
-        boolean is_pos = false;
-        boolean is_neg = false;
+        int lineNo = 1;
+//        boolean is_pos = false;
+//        boolean is_neg = false;
         StringBuilder word = new StringBuilder();
         for (int i = 0; i < chars.length; i++) {
-            startPos = i;
+            int startPos = i;
             word.delete(0, word.length());
             oneChar = chars[i];
             if (isSpaceOrLine(oneChar)) {
@@ -125,17 +122,17 @@ public class Lexer {
                     } else {
                         words.add(new Token(word.toString(), TypeEncoding.ERROR, lineNo));
                         words.getLast().setStartPos(startPos);
-                        errorInfoStrb.append("ERROR : Line: " + lineNo + " 标识符不得超过64个字符. " + "(" + word.toString() + ")\n");
+                        errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 标识符不得超过64个字符. ").append("(").append(word.toString()).append(")\n");
                     }
                 }
             } else if (isDigit(oneChar) || (oneChar == '.')) {   //如果是数字
                 boolean real_flag = false; //判断是否为REAL类型
                 boolean is_error = false;
-                if (is_pos) { //判断是否带有符号
-                    word.append('+');
-                } else if (is_neg) {
-                    word.append('-');
-                }
+//                if (is_pos) { //判断是否带有符号
+//                    word.append('+');
+//                } else if (is_neg) {
+//                    word.append('-');
+//                }
                 while (isDigit(oneChar) || (oneChar == '.')) {
                     if (oneChar == '.') {
                         if (real_flag) {
@@ -152,116 +149,114 @@ public class Lexer {
                     }
                 }
                 i--;
-                is_pos = false;
-                is_neg = false;
+//                is_pos = false;
+//                is_neg = false;
                 if (is_error) {
                     words.add(new Token(word.toString(), TypeEncoding.ERROR, lineNo));
                     words.getLast().setStartPos(startPos);
-                    errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法数字. " + "(" + word.toString() + ")\n");
+                    errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法数字. ").append("(").append(word.toString()).append(")\n");
                 } else {
                     if (real_flag) {
-                        words.add(new Token(word.toString(), TypeEncoding.REALVAL, lineNo));  //实型
+                        words.add(new Token(word.toString(), TypeEncoding.REAL_VAL, lineNo));  //实型
                         words.getLast().setStartPos(startPos);
                     } else {
-                        words.add(new Token(word.toString(), TypeEncoding.INTVAL, lineNo));// 整型
+                        words.add(new Token(word.toString(), TypeEncoding.INT_VAL, lineNo));// 整型
                         words.getLast().setStartPos(startPos);
                     }
                 }
 
             } else {
                 switch (oneChar) {  //各种符号
+                    case '%':
+                        try {
+                            oneChar = chars[++i];
+                            if (oneChar == '=') {   //检测%=
+                                words.add(new Token("%=", TypeEncoding.MOD_ASSIGN, lineNo));
+                                words.getLast().setStartPos(startPos);
+                            } else {
+                                words.add(new Token("%", TypeEncoding.MOD, lineNo));
+                                words.getLast().setStartPos(startPos);
+                                i--;
+                            }
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            words.add(new Token("%", TypeEncoding.MOD, lineNo));
+                            words.getLast().setStartPos(startPos);
+                        }
+                        break;
                     case '+':
                         try {
                             oneChar = chars[++i];
-                            if (words.getLast().getType() != -1 && words.getLast().getType() != 26 &&
-                                    words.getLast().getType() != 27 && words.getLast().getType() != 25
-                                    && !isKey(words.getLast().getValue())) {
-                                while (isSpaceOrLine(oneChar)) {  //跳过空格
-                                    try {
-                                        oneChar = chars[++i];
-                                    } catch (ArrayIndexOutOfBoundsException e) {
-                                        break;
-                                    }
-                                }
-                                if ((isDigit(oneChar) || oneChar == '.')) {   //判断后面是否是数字，如果是则与后面的数字组合在一起
-                                    is_pos = true;
-                                } else {
-                                    words.add(new Token("+", TypeEncoding.PLUS, lineNo));
-                                    words.getLast().setStartPos(startPos);
-                                }
-                                i--;
+                            if (oneChar == '+') {   //检测++
+                                words.add(new Token("++", TypeEncoding.PLUS_PLUS, lineNo));
+                                words.getLast().setStartPos(startPos);
+                            } else if (oneChar == '=') {//检测+=
+                                words.add(new Token("+=", TypeEncoding.PLUS_ASSIGN, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {
                                 words.add(new Token("+", TypeEncoding.PLUS, lineNo));
                                 words.getLast().setStartPos(startPos);
+                                //errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'+'. ").append("(").append(word.toString()).append(")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("+", TypeEncoding.PLUS, lineNo));
                             words.getLast().setStartPos(startPos);
-                        } catch (NoSuchElementException e) {
-                            words.add(new Token("+", TypeEncoding.PLUS, lineNo));
-                            words.getLast().setStartPos(startPos);
-                            //errorInfoStrb.append("ERROR : Line:" + lineNo + "非法使用'+' " + "(" + word.toString() + ")");
-                            i--;
                         }
                         break;
                     case '-':
                         try {
                             oneChar = chars[++i];
-                            if (words.getLast().getType() != -1 && words.getLast().getType() != 26 &&
-                                    words.getLast().getType() != 27 && words.getLast().getType() != 25
-                                    && !isKey(words.getLast().getValue())) {
-                                while (isSpaceOrLine(oneChar)) {
-                                    try {
-                                        oneChar = chars[++i];
-                                    } catch (ArrayIndexOutOfBoundsException e) {
-                                        break;
-                                    }
-                                }
-                                if ((isDigit(oneChar) || oneChar == '.')) {   //判断后面是否是数字，如果是则与后面的数字组合在一起
-                                    is_neg = true;
-                                } else {
-                                    words.add(new Token("-", TypeEncoding.MINUS, lineNo));
-                                    words.getLast().setStartPos(startPos);
-                                }
-                                i--;
+                            if (oneChar == '-') {   //检测--
+                                words.add(new Token("--", TypeEncoding.MINUS_MINUS, lineNo));
+                                words.getLast().setStartPos(startPos);
+                            } else if (oneChar == '=') { //检测-=
+                                words.add(new Token("-=", TypeEncoding.MINUS_ASSIGN, lineNo));
+                                words.getLast().setStartPos(startPos);
                             } else {
                                 words.add(new Token("-", TypeEncoding.MINUS, lineNo));
                                 words.getLast().setStartPos(startPos);
+                                //errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'-'. ").append("(").append(word.toString()).append(")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("-", TypeEncoding.MINUS, lineNo));
                             words.getLast().setStartPos(startPos);
-                        } catch (NoSuchElementException e) {
-                            words.add(new Token("-", TypeEncoding.MINUS, lineNo));
-                            words.getLast().setStartPos(startPos);
-                            //errorInfoStrb.append("ERROR : Line:" + lineNo + "非法使用'-' " + "(" + word.toString() + ")");
-                            i--;
                         }
                         break;
                     case '*':
-                        words.add(new Token("*", TypeEncoding.MUL, lineNo));
-                        words.getLast().setStartPos(startPos);
+                        try {
+                            oneChar = chars[++i];
+                            if (oneChar == '=') {   //检测*=
+                                words.add(new Token("*=", TypeEncoding.MUL_ASSIGN, lineNo));
+                                words.getLast().setStartPos(startPos);
+                            } else {
+                                words.add(new Token("*", TypeEncoding.MUL, lineNo));
+                                words.getLast().setStartPos(startPos);
+                                i--;
+                            }
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            words.add(new Token("*", TypeEncoding.MUL, lineNo));
+                            words.getLast().setStartPos(startPos);
+                        }
                         break;
                     case '(':
-                        words.add(new Token("(", TypeEncoding.LEFTP, lineNo));
+                        words.add(new Token("(", TypeEncoding.LEFT_P, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case ')':
-                        words.add(new Token(")", TypeEncoding.RIGHTP, lineNo));
+                        words.add(new Token(")", TypeEncoding.RIGHT_P, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case '[':
-                        words.add(new Token("[", TypeEncoding.LEFTBRK, lineNo));
+                        words.add(new Token("[", TypeEncoding.LEFT_BRK, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case ']':
-                        words.add(new Token("]", TypeEncoding.RIGHTBRK, lineNo));
+                        words.add(new Token("]", TypeEncoding.RIGHT_BRK, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case '{':
-                        words.add(new Token("{", TypeEncoding.LEFTBRA, lineNo));
+                        words.add(new Token("{", TypeEncoding.LEFT_BRA, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case '!':
@@ -269,7 +264,7 @@ public class Lexer {
                         words.getLast().setStartPos(startPos);
                         break;
                     case '}':
-                        words.add(new Token("}", TypeEncoding.RIGHTBRA, lineNo));
+                        words.add(new Token("}", TypeEncoding.RIGHT_BRA, lineNo));
                         words.getLast().setStartPos(startPos);
                         break;
                     case ';':
@@ -289,12 +284,13 @@ public class Lexer {
                             } else {
                                 words.add(new Token("&", TypeEncoding.ERROR, lineNo));
                                 words.getLast().setStartPos(startPos);
-                                errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'&'. " + "(" + word.toString() + ")\n");
+                                errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'&'. ").append("(").append(word.toString()).append(")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
                             words.add(new Token("&", TypeEncoding.ERROR, lineNo));
                             words.getLast().setStartPos(startPos);
+                            errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'&'. ").append("(").append(word.toString()).append(")\n");
                         }
                         break;
                     case '|':
@@ -306,7 +302,7 @@ public class Lexer {
                             } else {
                                 words.add(new Token("|", TypeEncoding.ERROR, lineNo));
                                 words.getLast().setStartPos(startPos);
-                                errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'|'. " + "(" + word.toString() + ")\n");
+                                errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'|'. ").append("(").append(word.toString()).append(")\n");
                                 i--;
                             }
                         } catch (ArrayIndexOutOfBoundsException e) {
@@ -321,9 +317,8 @@ public class Lexer {
                             {
                                 words.add(new Token("<>", TypeEncoding.NEQ, lineNo));
                                 words.getLast().setStartPos(startPos);
-                            }
-                            else if (oneChar == '=') { //小于等于
-                                words.add(new Token("<=", TypeEncoding.LESSEQ, lineNo));
+                            } else if (oneChar == '=') { //小于等于
+                                words.add(new Token("<=", TypeEncoding.LESS_EQ, lineNo));
                                 words.getLast().setStartPos(startPos);
                             } else {  //小于
                                 words.add(new Token("<", TypeEncoding.LESS, lineNo));
@@ -341,7 +336,7 @@ public class Lexer {
                         try {
                             oneChar = chars[++i];
                             if (oneChar == '=') { //大于等于
-                                words.add(new Token(">=", TypeEncoding.GREATEREQ, lineNo));
+                                words.add(new Token(">=", TypeEncoding.GREATER_EQ, lineNo));
                                 words.getLast().setStartPos(startPos);
                             } else {   //大于
                                 words.add(new Token(">", TypeEncoding.GREATER, lineNo));
@@ -394,10 +389,13 @@ public class Lexer {
                                         oneChar = chars[++i];
                                     }
                                 } catch (ArrayIndexOutOfBoundsException e) {
-                                    errorInfoStrb.append("ERROR : Line: " + lineNo + " 块级注释未闭合.\n");
+                                    errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 块级注释未闭合.\n");
                                     break;
                                 }
 
+                            } else if (oneChar == '=') {
+                                words.add(new Token("/=", TypeEncoding.DIV_ASSIGN, lineNo)); //检测/*
+                                words.getLast().setStartPos(startPos);
                             } else {  //除法
                                 words.add(new Token("/", TypeEncoding.DIV, lineNo));
                                 words.getLast().setStartPos(startPos);
@@ -412,7 +410,7 @@ public class Lexer {
                     default:
                         words.add(new Token(word.append(oneChar).toString(), TypeEncoding.ERROR, lineNo));
                         words.getLast().setStartPos(startPos);
-                        errorInfoStrb.append("ERROR : Line: " + lineNo + " 非法字符'" + word.toString() + "'. " + "(" + word.toString() + ")\n");
+                        errorInfoStrb.append("ERROR : Line: ").append(lineNo).append(" 非法字符'").append(word.toString()).append("'. ").append("(").append(word.toString()).append(")\n");
                         break;
                 }
             }

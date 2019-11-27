@@ -1,4 +1,4 @@
-package com.cmmint.SyntacticParser;
+package com.cmmint.syntactic_analyzer;
 
 public class StatementType {
     public static final int NONE = 0;
@@ -21,12 +21,20 @@ public class StatementType {
 
     public static final int BREAK = 16;
     public static final int CONTINUE = 17;
-    public static final int MORE_EXP = 18;
-    public static final int MORE_ADDEXP = 19;
-    public static final int INIT_ST = 20;// 初始化语句
+    public static final int MORE_LOGIC_EXP = 18;
+    public static final int MORE_ADD_EXP = 19;
+    public static final int INIT = 20;// 初始化语句
     public static final int VALUE_LIST = 21;
     public static final int MORE_VALUE = 22;
     public static final int MORE_TERM = 23;
     public static final int TERM = 24;
     public static final int JUMP_ST = 25;
+    public static final int PROGRAM = 26;
+    public static final int STMT_SEQ = 27;
+    public static final int IF_BLOCK = 28;
+    public static final int VAR_LIST = 29;
+    public static final int MORE_VAR = 30;
+    public static final int ARRAY_DIM = 31;
+    public static final int MORE_COMP_EXP = 32;
+    public static final int ID = 33;
 }
