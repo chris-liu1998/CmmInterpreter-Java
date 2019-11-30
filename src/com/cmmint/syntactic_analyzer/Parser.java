@@ -69,7 +69,7 @@ public class Parser {
             case TypeEncoding.CONTINUE:
                 return pJumpStmt();  //转向处理跳转语句
             default:
-                return pAssignStmt();  //转向处理赋值语句
+                return pAssignStmt();  //转向处理赋值语句      这里有bug！！！！！c#版本进行了修正
         }
     }
 
