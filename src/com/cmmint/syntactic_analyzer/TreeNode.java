@@ -143,7 +143,6 @@ public class TreeNode {
     }
 
     private String printNode(TreeNode node, String space) {
-        boolean hasVal = false;
         StringBuilder strb = new StringBuilder();
         strb.append(space).append("<").append(node.typeToString()).append(" : ").append(new Token(node.getDataType()).typeToString()).append(">\n");
         if (node.getValue() != null) {
